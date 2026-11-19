@@ -8,7 +8,7 @@ export const createOrder = (
   res: Response,
   next: NextFunction,
 ) => {
-  const { payment, email, phone, address, total, items } = req.body;
+  const { total, items } = req.body;
 
   Product.find({ _id: { $in: items } })
     .then((products) => {

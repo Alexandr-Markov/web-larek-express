@@ -8,9 +8,7 @@ import orderRouter from "./routes/order";
 import error from "./middlewares/error-handler";
 import { requestLogger, errorLogger } from "./middlewares/logger";
 import NotFoundError from "./errors/not-found-error";
-
-const { PORT = 3000, DB_ADDRESS = "mongodb://127.0.0.1:27017/weblarek" } =
-  process.env;
+import { PORT, DB_ADDRESS } from "./config";
 
 const app = express();
 
@@ -18,13 +16,10 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static(path.join(__dirname, "public")));
 
-mongoose
-  .connect(DB_ADDRESS)
-  .then(() => console.log("✅ MongoDB connected successfully"))
-  .catch((err) => {
-    console.error("❌ MongoDB connection error:", err);
-    process.exit(1);
-  });
+mongoose.connect(DB_ADDRESS).catch((err) => {
+  console.error("MongoDB connection error:", err);
+  process.exit(1);
+});
 
 app.use(requestLogger);
 
@@ -41,6 +36,4 @@ app.use(errorLogger);
 
 app.use(error);
 
-app.listen(PORT, () => {
-  console.log(`🚀 Сервер запущен на порту ${PORT}`);
-});
+app.listen(PORT);

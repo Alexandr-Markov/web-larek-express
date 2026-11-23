@@ -1,21 +1,21 @@
-import { NextFunction, Request, Response } from "express";
-import { Error as MongooseError, HydratedDocument } from "mongoose";
-import bcrypt from "bcryptjs";
-import ms from "ms";
-import User, { IUser } from "../models/user";
-import { AUTH_REFRESH_TOKEN_EXPIRY } from "../config";
-import BadRequestError from "../errors/bad-request-error";
-import ConflictError from "../errors/conflict-error";
-import NotFoundError from "../errors/not-found-error";
-import UnauthorizedError from "../errors/unauthorized-error";
-import { signAccessToken, signRefreshToken, verifyToken } from "../utils/jwt";
+import { NextFunction, Request, Response } from 'express';
+import { Error as MongooseError, HydratedDocument } from 'mongoose';
+import bcrypt from 'bcryptjs';
+import ms from 'ms';
+import User, { IUser } from '../models/user';
+import { AUTH_REFRESH_TOKEN_EXPIRY } from '../config';
+import BadRequestError from '../errors/bad-request-error';
+import ConflictError from '../errors/conflict-error';
+import NotFoundError from '../errors/not-found-error';
+import UnauthorizedError from '../errors/unauthorized-error';
+import { signAccessToken, signRefreshToken, verifyToken } from '../utils/jwt';
 
 const refreshCookieOptions = {
   httpOnly: true,
-  sameSite: "lax" as const,
+  sameSite: 'lax' as const,
   secure: false,
   maxAge: ms(AUTH_REFRESH_TOKEN_EXPIRY),
-  path: "/",
+  path: '/',
 };
 
 const sendAuthResponse = (res: Response, user: HydratedDocument<IUser>) => {
@@ -23,7 +23,7 @@ const sendAuthResponse = (res: Response, user: HydratedDocument<IUser>) => {
   const accessToken = signAccessToken(payload);
   const refreshToken = signRefreshToken(payload);
 
-  res.cookie("refreshToken", refreshToken, refreshCookieOptions);
+  res.cookie('refreshToken', refreshToken, refreshCookieOptions);
   return res.send({
     user: { email: user.email, name: user.name },
     success: true,
@@ -46,9 +46,9 @@ export const register = async (
     res.status(201);
     return sendAuthResponse(res, user);
   } catch (err) {
-    if (err instanceof Error && err.message.includes("E11000")) {
+    if (err instanceof Error && err.message.includes('E11000')) {
       return next(
-        new ConflictError("Пользователь с такой почтой уже существует"),
+        new ConflictError('Пользователь с такой почтой уже существует'),
       );
     }
     if (err instanceof MongooseError.ValidationError) {
@@ -65,13 +65,13 @@ export const login = async (
 ) => {
   try {
     const { email, password } = req.body;
-    const user = await User.findOne({ email }).select("+password");
+    const user = await User.findOne({ email }).select('+password');
     if (!user) {
-      throw new UnauthorizedError("Неверная почта или пароль");
+      throw new UnauthorizedError('Неверная почта или пароль');
     }
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
-      throw new UnauthorizedError("Неверная почта или пароль");
+      throw new UnauthorizedError('Неверная почта или пароль');
     }
     const refreshToken = signRefreshToken({ _id: String(user._id) });
     user.tokens.push({ token: refreshToken });
@@ -90,26 +90,24 @@ export const refreshAccessToken = async (
   const { refreshToken } = req.cookies;
 
   if (!refreshToken) {
-    return next(new UnauthorizedError("Refresh-токен не найден в куках"));
+    return next(new UnauthorizedError('Refresh-токен не найден в куках'));
   }
-  let payload;
-  try {
-    payload = verifyToken(refreshToken);
-  } catch {
-    return next(new UnauthorizedError("Refresh-токен просрочен или невалиден"));
+  const payload = verifyToken(refreshToken);
+  if (!payload) {
+    return next(new UnauthorizedError('Refresh-токен просрочен или невалиден'));
   }
   try {
     const user = await User.findById(payload._id);
     if (!user) {
       return next(
-        new UnauthorizedError("Пользователь по refresh-токену не найден"),
+        new UnauthorizedError('Пользователь по refresh-токену не найден'),
       );
     }
     user.tokens = user.tokens.filter((t) => t.token !== refreshToken);
     const newRefreshToken = signRefreshToken({ _id: String(user._id) });
     user.tokens.push({ token: newRefreshToken });
     await user.save();
-    res.cookie("refreshToken", newRefreshToken, refreshCookieOptions);
+    res.cookie('refreshToken', newRefreshToken, refreshCookieOptions);
     return res.send({
       user: { email: user.email, name: user.name },
       success: true,
@@ -128,27 +126,25 @@ export const logout = async (
   const { refreshToken } = req.cookies;
 
   if (!refreshToken) {
-    return next(new BadRequestError("Refresh-токен не найден в куках"));
+    return next(new UnauthorizedError('Refresh-токен не найден в куках'));
   }
-  let payload;
-  try {
-    payload = verifyToken(refreshToken);
-  } catch {
-    return next(new UnauthorizedError("Refresh-токен невалиден"));
+  const payload = verifyToken(refreshToken);
+  if (!payload) {
+    return next(new UnauthorizedError('Refresh-токен невалиден'));
   }
   if (!/^[0-9a-fA-F]{24}$/.test(payload._id)) {
     return next(
-      new BadRequestError("Невалидный идентификатор пользователя в токене"),
+      new BadRequestError('Невалидный идентификатор пользователя в токене'),
     );
   }
   try {
     const user = await User.findById(payload._id);
     if (!user) {
-      return next(new NotFoundError("Пользователь не найден"));
+      return next(new NotFoundError('Пользователь не найден'));
     }
     user.tokens = user.tokens.filter((t) => t.token !== refreshToken);
     await user.save();
-    res.clearCookie("refreshToken", refreshCookieOptions);
+    res.clearCookie('refreshToken', refreshCookieOptions);
     return res.send({ success: true });
   } catch (err) {
     return next(err);
@@ -163,7 +159,7 @@ export const getCurrentUser = async (
   try {
     const user = await User.findById(req.user?._id);
     if (!user) {
-      return next(new NotFoundError("Пользователь не найден"));
+      return next(new NotFoundError('Пользователь не найден'));
     }
     return res.send({
       user: { email: user.email, name: user.name },

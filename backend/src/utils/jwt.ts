@@ -1,19 +1,22 @@
-import jwt from "jsonwebtoken";
+import jwt from 'jsonwebtoken';
+import {
+  JWT_SECRET,
+  AUTH_ACCESS_TOKEN_EXPIRY,
+  AUTH_REFRESH_TOKEN_EXPIRY,
+} from '../config';
 
 export interface UserPayload {
   _id: string;
 }
 
-const { JWT_SECRET = "dev-secret" } = process.env;
+export const signAccessToken = (payload: UserPayload) => jwt.sign(payload, JWT_SECRET, {
+  expiresIn: AUTH_ACCESS_TOKEN_EXPIRY,
+});
 
-// Пейлоад — строго { _id }, как требует ТЗ
-export const signAccessToken = (payload: UserPayload) =>
-  jwt.sign(payload, JWT_SECRET, { expiresIn: "10m" });
+export const signRefreshToken = (payload: UserPayload) => jwt.sign(payload, JWT_SECRET, {
+  expiresIn: AUTH_REFRESH_TOKEN_EXPIRY,
+});
 
-export const signRefreshToken = (payload: UserPayload) =>
-  jwt.sign(payload, JWT_SECRET, { expiresIn: "7d" });
-
-export const verifyToken = (token: string): UserPayload =>
-  jwt.verify(token, JWT_SECRET) as UserPayload;
-
-export default JWT_SECRET;
+export function verifyToken(token: string): UserPayload | null {
+  return jwt.verify(token, JWT_SECRET) as UserPayload;
+}

@@ -3,7 +3,7 @@ class UnauthorizedError extends Error {
 
   constructor(message: string) {
     super(message);
-    this.name = "Unauthorized Error";
+    this.name = 'Unauthorized Error';
     this.statusCode = 401;
   }
 }

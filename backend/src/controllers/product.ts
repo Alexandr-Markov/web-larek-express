@@ -1,17 +1,17 @@
-import { Error as MongooseError, isValidObjectId } from "mongoose";
-import { NextFunction, Request, Response } from "express";
-import Product from "../models/product";
+import { Error as MongooseError } from 'mongoose';
+import { NextFunction, Request, Response } from 'express';
+import Product from '../models/product';
 import {
   moveFileToImages,
   removeFileFromImages,
   isFileInTmp,
-} from "../utils/file";
-import BadRequestError from "../errors/bad-request-error";
-import NotFoundError from "../errors/not-found-error";
-import ConflictError from "../errors/conflict-error";
+} from '../utils/file';
+import BadRequestError from '../errors/bad-request-error';
+import NotFoundError from '../errors/not-found-error';
+import ConflictError from '../errors/conflict-error';
 
 export const getProducts = (
-  req: Request,
+  _req: Request,
   res: Response,
   next: NextFunction,
 ) => {
@@ -29,12 +29,14 @@ export const createProduct = async (
   res: Response,
   next: NextFunction,
 ) => {
-  const { title, image, category, description, price } = req.body;
+  const {
+    title, image, category, description, price,
+  } = req.body;
   let movedFileName: string | undefined;
 
   try {
     if (!isFileInTmp(image.fileName)) {
-      return next(new BadRequestError("Файл изображения не найден на сервере"));
+      return next(new BadRequestError('Файл изображения не найден на сервере'));
     }
 
     movedFileName = moveFileToImages(image.fileName);
@@ -56,7 +58,7 @@ export const createProduct = async (
       return next(new BadRequestError(err.message));
     }
     if ((err as ProductError).code === 11000) {
-      return next(new ConflictError("Товар с таким названием уже существует"));
+      return next(new ConflictError('Товар с таким названием уже существует'));
     }
     return next(err);
   }
@@ -68,13 +70,15 @@ export const updateProduct = async (
   next: NextFunction,
 ) => {
   const { productId } = req.params;
-  const { title, image, category, description, price } = req.body;
+  const {
+    title, image, category, description, price,
+  } = req.body;
   let movedFileName: string | undefined;
 
   try {
     const product = await Product.findById(productId);
     if (!product) {
-      return next(new NotFoundError("Товар не найден"));
+      return next(new NotFoundError('Товар не найден'));
     }
 
     const oldFileName = product.image?.fileName;
@@ -83,7 +87,7 @@ export const updateProduct = async (
     if (newFileName && newFileName !== oldFileName) {
       if (!isFileInTmp(newFileName)) {
         return next(
-          new BadRequestError("Файл изображения не найден на сервере"),
+          new BadRequestError('Файл изображения не найден на сервере'),
         );
       }
       movedFileName = moveFileToImages(newFileName);
@@ -119,7 +123,7 @@ export const updateProduct = async (
       return next(new BadRequestError(err.message));
     }
     if ((err as ProductError).code === 11000) {
-      return next(new ConflictError("Товар с таким названием уже существует"));
+      return next(new ConflictError('Товар с таким названием уже существует'));
     }
     return next(err);
   }
@@ -135,7 +139,7 @@ export const deleteProduct = async (
 
     const deleted = await Product.findByIdAndDelete(productId);
     if (!deleted) {
-      return next(new NotFoundError("Товар не найден"));
+      return next(new NotFoundError('Товар не найден'));
     }
 
     return res.send({ data: deleted });

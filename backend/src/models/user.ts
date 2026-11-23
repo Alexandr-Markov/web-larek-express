@@ -1,4 +1,4 @@
-import mongoose from "mongoose";
+import mongoose from 'mongoose';
 
 export interface IUser {
   name: string;
@@ -14,7 +14,7 @@ const userSchema = new mongoose.Schema<IUser, IUserModel>(
     name: {
       type: String,
       required: false,
-      default: "Ё-мое",
+      default: 'Ё-мое',
       minlength: [2, 'Минимальная длина поля "name" — 2 символа'],
       maxlength: [30, 'Максимальная длина поля "name" — 30 символов'],
     },
@@ -48,4 +48,4 @@ const userSchema = new mongoose.Schema<IUser, IUserModel>(
   },
 );
 
-export default mongoose.model<IUser, IUserModel>("user", userSchema);
+export default mongoose.model<IUser, IUserModel>('user', userSchema);

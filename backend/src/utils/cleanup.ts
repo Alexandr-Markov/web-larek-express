@@ -1,7 +1,7 @@
-import { CronJob } from "cron";
-import fs from "fs";
-import path from "path";
-import { TMP_DIR } from "../config";
+import { CronJob } from 'cron';
+import fs from 'fs';
+import path from 'path';
+import { TMP_DIR } from '../config';
 
 const cleanupTempFiles = () => {
   fs.readdir(TMP_DIR, (err, files) => {
@@ -18,9 +18,10 @@ const cleanupTempFiles = () => {
   });
 };
 
-const job = new CronJob("0 * * * * *", cleanupTempFiles);
+const job = new CronJob('0 * * * * *', cleanupTempFiles);
 
-export const startTempCleanup = () => {
+const startTempCleanup = () => {
   job.start();
-  console.log("Cron-задача очистки tmp запущена");
 };
+
+export default startTempCleanup;

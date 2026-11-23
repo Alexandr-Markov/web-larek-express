@@ -1,5 +1,5 @@
-import mongoose from "mongoose";
-import { removeFileFromImages } from "../utils/file";
+import mongoose from 'mongoose';
+import { removeFileFromImages } from '../utils/file';
 
 interface IProduct {
   title: string;
@@ -38,14 +38,14 @@ const productSchema = new mongoose.Schema<IProduct>(
     },
     description: {
       type: String,
-      default: "",
+      default: '',
     },
     price: {
       type: Number,
       default: null,
       validate: {
         validator: (v: number | null) => v === null || v > 0,
-        message: "Цена должна быть положительным числом или null",
+        message: 'Цена должна быть положительным числом или null',
       },
     },
   },
@@ -54,10 +54,10 @@ const productSchema = new mongoose.Schema<IProduct>(
   },
 );
 
-productSchema.post("findOneAndDelete", (product) => {
+productSchema.post('findOneAndDelete', (product) => {
   if (product?.image?.fileName) {
     removeFileFromImages(product.image.fileName);
   }
 });
 
-export default mongoose.model<IProduct>("product", productSchema);
+export default mongoose.model<IProduct>('product', productSchema);

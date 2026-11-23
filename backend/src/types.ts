@@ -1,4 +1,4 @@
-import { UserPayload } from "./utils/jwt";
+import { UserPayload } from './utils/jwt';
 
 declare global {
   namespace Express {
